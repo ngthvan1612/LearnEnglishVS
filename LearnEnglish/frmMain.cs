@@ -15,8 +15,7 @@ namespace LearnEnglish
 {
     public partial class frmMain : Form
     {
-        private StreamWords sw = null;
-        private string path = null;
+        private StreamWords stream = null;
         private Word Current;
         private List<Word> queue;
         private int PointST = 0;
@@ -30,9 +29,7 @@ namespace LearnEnglish
         
         private void frmMain_Load(object sender, EventArgs e)
         {
-            sw = new StreamWords();
-            Current.Eng = "\0";
-            queue = new List<Word>();
+            
         }
 
         private void listWords_CellContentClick(object sender, DataGridViewCellEventArgs e)
@@ -55,165 +52,208 @@ namespace LearnEnglish
 
         private void btnDelete_Click(object sender, EventArgs e)
         {
-            var current = listWords.CurrentRow;
-            if (current != null && current.Index != listWords.NewRowIndex)
-                listWords.Rows.Remove(current);
+            var row = listWords.CurrentRow;
+            if (row == null) return;
+            if (row.IsNewRow == true) return;
+            listWords.Rows.Remove(row);
+            stream.Saved = false;
         }
 
         private void FillToList()
         {
+            if (stream == null)
+            {
+                MessageBox.Show("Error [FILL-TO-LIST]");
+                return;
+            }
             listWords.Rows.Clear();
-            foreach (Word w in sw.listWords)
+            List<Word> lw = stream.Get();
+            foreach (Word w in lw)
                 listWords.Rows.Add(w.Eng, w.Viet);
         }
 
-        private void OpenFile()
+        private void FillToStream()
         {
-            if (sw != null)
+            if (stream == null) return;
+            stream.ResetWords();
+            foreach (DataGridViewRow row in listWords.Rows)
             {
-                OpenFileDialog o = new OpenFileDialog()
-                {
-                    Filter = Filter,
-                    Multiselect = false
-                };
-                if (o.ShowDialog() == System.Windows.Forms.DialogResult.OK)
-                {
-                    sw.LoadData(o.FileName);
-                    FillToList();
-                }
+                object en = row.Cells[0].Value;
+                object vi = row.Cells[1].Value;
+                if (en == null || vi == null) continue;
+                stream.Add(en.ToString(), vi.ToString());
             }
         }
 
-        private void SaveFile()
+        private bool OpenFileWithoutSave()
         {
-            if (sw != null)
+            OpenFileDialog o = new OpenFileDialog()
             {
-                SaveFileDialog s = new SaveFileDialog()
-                {
-                    Filter = Filter,
-                    FileName = sw.Path
-                };
-                if (s.ShowDialog() == System.Windows.Forms.DialogResult.OK)
-                {
-                    sw.listWords.Clear();
-                    for (int i = 0; i < listWords.Rows.Count; ++i)
-                    {
-                        object eng = listWords.Rows[i].Cells[0].Value;
-                        object viet = listWords.Rows[i].Cells[1].Value;
-                        if (eng == null || viet == null) continue;
-                        sw.listWords.Add(new Word(eng.ToString(), viet.ToString()));
-                    }
-                    sw.WriteData(s.FileName);
-                }
+                Filter = Filter,
+                Multiselect = false
+            };
+            if (o.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+            {
+                stream = new StreamWords();
+                GC.Collect();
+                stream.LoadData(o.FileName);
+                FillToList();
+                return true;
             }
+            return false;
+        }
+
+        private bool SaveFile()
+        {
+            if (stream == null) return true;
+            if (stream.Path != "")
+            {
+                FillToStream();
+                stream.WriteData(stream.Path);
+                return true;
+            }
+            SaveFileDialog s = new SaveFileDialog()
+            {
+                Filter = Filter
+            };
+            if (s.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+            {
+                stream.WriteData(s.FileName);
+                return true;
+            }
+            return false;
         }
 
         private void btnLoad_Click(object sender, EventArgs e)
         {
-            if (sw == null) return;
-            if (sw.Saved == false)
+            if (stream == null) OpenFileWithoutSave();
+            else
             {
-                switch (MessageBox.Show("Bạn có muốn lưu lại không?", "Warn", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Warning))
+                if (stream.Saved == false)
                 {
-                    case System.Windows.Forms.DialogResult.Yes:
-                        SaveFile();
-                        if (sw.Saved == false) return;
-                        break;
-                    case System.Windows.Forms.DialogResult.No:
-                        OpenFile();
-                        return;
-                    case System.Windows.Forms.DialogResult.Cancel:
-                        return;
+                    var result = MessageBox.Show("Bạn có muốn lưu lại không?", "Thông báo", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Warning);
+                    switch (result)
+                    {
+                        case System.Windows.Forms.DialogResult.Yes:
+                            if (SaveFile() == false) return;
+                            break;
+                        case System.Windows.Forms.DialogResult.No:
+                            ///No thing
+                            break;
+                        case System.Windows.Forms.DialogResult.Cancel:
+                            return;
+                    }                    
                 }
+                OpenFileWithoutSave();
             }
-            if (sw.Saved == true) OpenFile();
         }
 
         private void btnSave_Click(object sender, EventArgs e)
         {
-            if (sw == null) return;
-            SaveFile();
+            if (stream == null) stream = new StreamWords();
+            FillToStream();
+            if (stream.Path != "") stream.WriteData(stream.Path);
+            else SaveFile();
         }
 
         private void listWords_CellValueChanged(object sender, DataGridViewCellEventArgs e)
         {
-            if (sw == null) return;
-            sw.Saved = false;
-        }
-
-        private Word GetNextWord()
-        {
-            if (queue.Count == 0)
-            {
-
-                return Current = new Word("\0", "");
-            }
-            Current = queue[0];
-            queue.RemoveAt(0);
-            lbWord.Text = Current.Viet;
-            return Current;
+            if (stream == null) return;
+            stream.Saved = false;
         }
 
         private void tbInput_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.KeyData == Keys.Enter)
             {
+                if (queue == null) return;
                 if (Current.Eng == "\0")
                 {
-                    MessageBox.Show("Hết từ vựng!");
+                    MessageBox.Show("Đã hết từ vựng!");
                     return;
                 }
-                if (tbInput.Text.ToUpper() == Current.Eng.ToUpper())
+                if (StreamWords.Repair(tbInput.Text).ToUpper() == StreamWords.Repair(Current.Eng).ToUpper())
                 {
-                    lbPoint.Text = (++PointST).ToString();
+                    lbPoint.Text = "Point: " + (++PointST).ToString();
+                    tbInput.Text = "";
                     Current = GetNextWord();
                 }
                 else
                 {
                     MessageBox.Show(Current.Eng);
-                    lbPoint.Text = (--PointST).ToString();
+                    lbPoint.Text = "Point: " + (--PointST).ToString();
                 }
                 tbInput.Text = "";
             }
         }
 
+        private Word GetNextWord()
+        {
+            if (queue.Count == 0)
+            {
+                lbWord.Text = "Đã hết từ vựng!";
+                return new Word("\0", "");
+            }
+            Word tmp = queue[0];
+            lbWord.Text = tmp.Viet;
+            queue.RemoveAt(0);
+            tbInput.Focus();
+            return tmp;
+        }
+
         private void btnStart_Click(object sender, EventArgs e)
         {
-            queue.Clear();
+            if (stream == null) return;
+            if (queue == null) queue = new List<Word>();
+            if (queue.Count != 0)
             {
-                lbPoint.Text = (PointST = 0).ToString();
-                ///New
-                Random r = new Random();
-                for (int i = 0; i < num.Value; ++i)
-                {
-                    foreach (Word w in sw.listWords)
-                    {
-                        Word tmp = w;
-                        tmp.id = r.Next();
-                        queue.Add(tmp);
-                    }
-                }
-                for (int i = 0; i < queue.Count - 1; ++i)
-                    for (int j = i + 1; j < queue.Count; ++j)
-                        if (queue[i].id > queue[j].id) {
-                            Word tmp = queue[i];
-                            queue[i] = queue[j];
-                            queue[j] = tmp;
-                        }
-                Current = GetNextWord();
+                var result = MessageBox.Show("Đang học, bạn có muốn bắt đầu lại?", "Thông báo", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+                if (result == System.Windows.Forms.DialogResult.No) return;
             }
-            tbInput.Focus();
+            PointST = 0;
+            queue.Clear();
+            Random r = new Random();
+            List<Word> lw = stream.Get();
+            for (int i = 0; i < num.Value; ++i)
+            {
+                foreach (Word w in lw.ToList())
+                {
+                    Word tmp = w;
+                    tmp.id = r.Next();
+                    queue.Add(tmp);
+                }
+            }
+            for (int i = 0; i < queue.Count - 1; ++i)
+                for (int j = i + 1; j < queue.Count; ++j)
+                    if (queue[i].id > queue[j].id)
+                    {
+                        Word tmp = queue[i];
+                        queue[i] = queue[j];
+                        queue[j] = tmp;
+                    }
+            Current = GetNextWord();
         }
 
         private void button3_Click(object sender, EventArgs e)
         {
             MessageBox.Show("No information!");
         }
+
+        private void listWords_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
+        {
+            e.CellStyle = listWords.DefaultCellStyle;
+        }
+
+        private void lbPoint_TextChanged(object sender, EventArgs e)
+        {
+            if (PointST < 0) lbPoint.ForeColor = Color.Red;
+            else lbPoint.ForeColor = Color.Blue;
+        }
     }
 
     public class StreamWords
     {
-        public List<Word> listWords;
+        private List<Word> listWords;
         public bool Saved;
         public string Path;
 
@@ -224,25 +264,23 @@ namespace LearnEnglish
             Path = "";
         }
 
-        public void ResetData()
+        public void ResetWords()
         {
             listWords = new List<Word>();
-            Saved = true;
-            Path = "";
         }
 
         public void LoadData(string path)
         {
             Path = path;
             Saved = true;
-            ResetData();
+            ResetWords();
             BinaryReader br = new BinaryReader(new FileStream(path, FileMode.OpenOrCreate));
             int n = br.ReadInt32();
             for (int i = 0; i < n; ++i)
             {
                 string en, vi;
-                en = br.ReadString();
-                vi = br.ReadString();
+                en = Enco(br.ReadString());
+                vi = Enco(br.ReadString());
                 listWords.Add(new Word(en, vi));
             }
             br.Close();
@@ -254,6 +292,38 @@ namespace LearnEnglish
             listWords.Add(new Word(en, vi));
         }
 
+        public List<Word> Get()
+        {
+            return listWords;
+        }
+
+        public static string Repair(string p)
+        {
+            string tmp = "";
+            string res = "";
+            p += " ";
+            for (int i = 0; i < (int)p.Length; ++i)
+                if (p[i] == ' ')
+                {
+                    if (tmp == "") continue;
+                    res = res + tmp + " ";
+                    tmp = "";
+                }
+                else tmp += p[i];
+            if (res.Length > 0 && res[res.Length - 1] == ' ')
+                res = res.Remove(res.Length - 1);
+            return res;
+        }
+
+        private string Enco(string p)
+        {
+            string res = "";
+            foreach (char c in p)
+                res = res + (char)((int)c ^ 161);
+            res = Repair(res);
+            return res;
+        }
+
         public void WriteData(string path)
         {
             Path = path;
@@ -262,8 +332,8 @@ namespace LearnEnglish
             bw.Write(listWords.Count);
             foreach (Word w in listWords)
             {
-                bw.Write(w.Eng);
-                bw.Write(w.Viet);
+                bw.Write(Enco(w.Eng));
+                bw.Write(Enco(w.Viet));
             }
             bw.Close();
         }

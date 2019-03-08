@@ -28,8 +28,9 @@
         /// </summary>
         private void InitializeComponent()
         {
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle6 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle4 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle5 = new System.Windows.Forms.DataGridViewCellStyle();
             this.btnLoad = new System.Windows.Forms.Button();
             this.btnSave = new System.Windows.Forms.Button();
             this.btnStart = new System.Windows.Forms.Button();
@@ -144,36 +145,53 @@
             // 
             // listWords
             // 
+            this.listWords.AllowUserToResizeColumns = false;
+            this.listWords.AllowUserToResizeRows = false;
             this.listWords.BackgroundColor = System.Drawing.Color.White;
-            this.listWords.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.listWords.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
             this.listWords.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.tbCol_Eng,
             this.tbCol_Viet});
+            dataGridViewCellStyle6.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+            dataGridViewCellStyle6.BackColor = System.Drawing.SystemColors.Window;
+            dataGridViewCellStyle6.Font = new System.Drawing.Font("Consolas", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle6.ForeColor = System.Drawing.SystemColors.ControlText;
+            dataGridViewCellStyle6.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle6.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle6.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
+            this.listWords.DefaultCellStyle = dataGridViewCellStyle6;
             this.listWords.Dock = System.Windows.Forms.DockStyle.Fill;
             this.listWords.GridColor = System.Drawing.Color.Black;
             this.listWords.Location = new System.Drawing.Point(3, 16);
             this.listWords.Name = "listWords";
+            this.listWords.RowTemplate.DefaultCellStyle.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+            this.listWords.RowTemplate.DefaultCellStyle.Font = new System.Drawing.Font("Times New Roman", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.listWords.ShowCellErrors = false;
+            this.listWords.ShowCellToolTips = false;
+            this.listWords.ShowEditingIcon = false;
+            this.listWords.ShowRowErrors = false;
             this.listWords.Size = new System.Drawing.Size(533, 173);
             this.listWords.TabIndex = 0;
             this.listWords.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.listWords_CellContentClick);
+            this.listWords.CellFormatting += new System.Windows.Forms.DataGridViewCellFormattingEventHandler(this.listWords_CellFormatting);
             this.listWords.CellValueChanged += new System.Windows.Forms.DataGridViewCellEventHandler(this.listWords_CellValueChanged);
             this.listWords.RowPostPaint += new System.Windows.Forms.DataGridViewRowPostPaintEventHandler(this.listWords_RowPostPaint);
             // 
             // tbCol_Eng
             // 
-            dataGridViewCellStyle1.Font = new System.Drawing.Font("Times New Roman", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.tbCol_Eng.DefaultCellStyle = dataGridViewCellStyle1;
+            dataGridViewCellStyle4.Font = new System.Drawing.Font("Times New Roman", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.tbCol_Eng.DefaultCellStyle = dataGridViewCellStyle4;
             this.tbCol_Eng.HeaderText = "Tiếng anh";
             this.tbCol_Eng.Name = "tbCol_Eng";
-            this.tbCol_Eng.Width = 245;
+            this.tbCol_Eng.Width = 235;
             // 
             // tbCol_Viet
             // 
-            dataGridViewCellStyle2.Font = new System.Drawing.Font("Times New Roman", 11.25F);
-            this.tbCol_Viet.DefaultCellStyle = dataGridViewCellStyle2;
+            dataGridViewCellStyle5.Font = new System.Drawing.Font("Times New Roman", 11.25F);
+            this.tbCol_Viet.DefaultCellStyle = dataGridViewCellStyle5;
             this.tbCol_Viet.HeaderText = "Tiếng Việt";
             this.tbCol_Viet.Name = "tbCol_Viet";
-            this.tbCol_Viet.Width = 245;
+            this.tbCol_Viet.Width = 235;
             // 
             // groupBox2
             // 
@@ -219,7 +237,7 @@
             // 
             // tbInput
             // 
-            this.tbInput.Font = new System.Drawing.Font("Times New Roman", 15.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.tbInput.Font = new System.Drawing.Font("Consolas", 15.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.tbInput.Location = new System.Drawing.Point(6, 78);
             this.tbInput.Name = "tbInput";
             this.tbInput.Size = new System.Drawing.Size(527, 32);
@@ -247,6 +265,7 @@
             this.lbPoint.Size = new System.Drawing.Size(81, 23);
             this.lbPoint.TabIndex = 0;
             this.lbPoint.Text = "Point";
+            this.lbPoint.TextChanged += new System.EventHandler(this.lbPoint_TextChanged);
             // 
             // frmMain
             // 
@@ -284,14 +303,14 @@
         private System.Windows.Forms.Button btnDelete;
         private System.Windows.Forms.GroupBox groupBox1;
         private System.Windows.Forms.DataGridView listWords;
-        private System.Windows.Forms.DataGridViewTextBoxColumn tbCol_Eng;
-        private System.Windows.Forms.DataGridViewTextBoxColumn tbCol_Viet;
         private System.Windows.Forms.GroupBox groupBox2;
         private System.Windows.Forms.Label lbWord;
         private System.Windows.Forms.Label lbPoint;
         private System.Windows.Forms.TextBox tbInput;
         private System.Windows.Forms.Label lbRest;
         private System.Windows.Forms.NumericUpDown num;
+        private System.Windows.Forms.DataGridViewTextBoxColumn tbCol_Eng;
+        private System.Windows.Forms.DataGridViewTextBoxColumn tbCol_Viet;
 
     }
 }

@@ -8,3 +8,4 @@ C:\Users\Nguyen Van\documents\visual studio 2010\Projects\LearnEnglish\LearnEngl
 C:\Users\Nguyen Van\documents\visual studio 2010\Projects\LearnEnglish\LearnEnglish\bin\Debug\eng.mdf
 C:\Users\Nguyen Van\documents\visual studio 2010\Projects\LearnEnglish\LearnEnglish\bin\Debug\eng_log.ldf
 C:\Users\Nguyen Van\documents\visual studio 2010\Projects\LearnEnglish\LearnEnglish\bin\Debug\LearnEnglish.exe.config
+C:\Users\Nguyen Van\Documents\Visual Studio 2010\Projects\LearnEnglish\LearnEnglish\obj\x86\Debug\LearnEnglish.csprojResolveAssemblyReference.cache
