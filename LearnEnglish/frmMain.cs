@@ -18,18 +18,44 @@ namespace LearnEnglish
         private StreamWords stream = null;
         private Word Current;
         private List<Word> queue;
-        private int PointST = 0;
+        private int _pointST = 0;
+        private int PointST
+        {
+            set
+            {                
+                _pointST = value ^ Program.MODULE_MOD;
+                lbPoint.Text = "Point: " + (_pointST ^ Program.MODULE_MOD).ToString();
+            }
+            get
+            {
+                return _pointST ^ Program.MODULE_MOD;
+            }
+        }
+        private bool _learned = true;
+        private bool Learned
+        {
+            set
+            {
+                if (_learned == false && value == true)
+                    FillToList();
+                else if (_learned == true && value == false)
+                    listWords.Rows.Clear();
+                _learned = value;
+            }
+            get { return _learned; }
+        }
         private const string Filter = "Learn English|*.learn";
 
         public frmMain()
         {
             InitializeComponent();
         }
-
         
         private void frmMain_Load(object sender, EventArgs e)
         {
-            
+            comBox.SelectedIndex = 1;
+            PointST = 0;
+            Current = new Word("\0", "");
         }
 
         private void listWords_CellContentClick(object sender, DataGridViewCellEventArgs e)
@@ -98,6 +124,7 @@ namespace LearnEnglish
                 GC.Collect();
                 stream.LoadData(o.FileName);
                 FillToList();
+                PointST = 0;
                 return true;
             }
             return false;
@@ -172,16 +199,25 @@ namespace LearnEnglish
                     MessageBox.Show("Đã hết từ vựng!");
                     return;
                 }
-                if (StreamWords.Repair(tbInput.Text).ToUpper() == StreamWords.Repair(Current.Eng).ToUpper())
+                string must = "";
+                if (comBox.SelectedIndex == 0)
+                    must = StreamWords.Repair(Current.Viet).ToUpper();
+                else
+                    must = StreamWords.Repair(Current.Eng).ToUpper();
+                string input = StreamWords.Repair(tbInput.Text).ToUpper();
+                if (input == must)
                 {
-                    lbPoint.Text = "Point: " + (++PointST).ToString();
+                    ++PointST;
                     tbInput.Text = "";
                     Current = GetNextWord();
                 }
                 else
                 {
-                    MessageBox.Show(Current.Eng);
-                    lbPoint.Text = "Point: " + (--PointST).ToString();
+                    if (comBox.SelectedIndex == 0)
+                        MessageBox.Show(Current.Viet);
+                    else
+                        MessageBox.Show(Current.Eng);
+                    --PointST;
                 }
                 tbInput.Text = "";
             }
@@ -191,11 +227,15 @@ namespace LearnEnglish
         {
             if (queue.Count == 0)
             {
+                Learned = true;
                 lbWord.Text = "Đã hết từ vựng!";
                 return new Word("\0", "");
             }
             Word tmp = queue[0];
-            lbWord.Text = tmp.Viet;
+            if (comBox.SelectedIndex == 0)
+                lbWord.Text = tmp.Eng;
+            else
+                lbWord.Text = tmp.Viet;
             queue.RemoveAt(0);
             tbInput.Focus();
             return tmp;
@@ -210,6 +250,7 @@ namespace LearnEnglish
                 var result = MessageBox.Show("Đang học, bạn có muốn bắt đầu lại?", "Thông báo", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
                 if (result == System.Windows.Forms.DialogResult.No) return;
             }
+            Learned = false;
             PointST = 0;
             queue.Clear();
             Random r = new Random();
